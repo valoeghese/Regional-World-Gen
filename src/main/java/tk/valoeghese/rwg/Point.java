@@ -51,6 +51,10 @@ public class Point {
 		return Math.sqrt(this.squaredDist(x, y));
 	}
 
+	public double fastInvDist(Point other) {
+		return fastInvSqrt(this.squaredDist(other.x, other.y));
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -88,5 +92,16 @@ public class Point {
 	 */
 	public static Point onlyAt(double x, double y) {
 		return new Point(x, y, 0);
+	}
+
+	// also 1/0 = 2.1611214334330826E154 according to fastInvSqrt ;)
+	private static double fastInvSqrt(double x) { // https://stackoverflow.com/questions/11513344/how-to-implement-the-fast-inverse-square-root-in-java
+		double xhalf = 0.5 * x;
+		long i = Double.doubleToLongBits(x);
+		i = 0x5fe6ec85e7de30daL - (i >> 1);
+		x = Double.longBitsToDouble(i);
+		x *= (1.5 - xhalf * x * x);
+		x *= (1.5 - xhalf * x * x); // second iteration of newton's method
+		return x;
 	}
 }

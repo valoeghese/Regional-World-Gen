@@ -1,21 +1,23 @@
 package tk.valoeghese.rwg;
 
 public final class Voronoi {
-	public Voronoi(long seed) {
+	public Voronoi(long seed, double relaxation) {
 		this.seed = seed;
+		this.relaxation = relaxation;
 	}
 
 	private final long seed;
+	private final double relaxation;
 
-	public Point sampleVoronoiGrid(int x, int y, double relaxation) {
-		double unrelaxation = 1.0f - relaxation;
-		double vx = x + relaxation * 0.5f + unrelaxation * this.randomDouble(x, y, 0);
-		double vy = y + relaxation * 0.5f + unrelaxation * this.randomDouble(x, y, 1);
+	public Point sampleGrid(int x, int y) {
+		double unrelaxation = 1.0 - this.relaxation;
+		double vx = x + this.relaxation * 0.5 + unrelaxation * this.randomDouble(x, y, 0);
+		double vy = y + this.relaxation * 0.5 + unrelaxation * this.randomDouble(x, y, 1);
 		return new Point(vx, vy);
 	}
 
-	public Point sampleVoronoi(double x, double y, double relaxation) {
-		double unrelaxation = 1.0f - relaxation;
+	public Point sample(double x, double y) {
+		double unrelaxation = 1.0 - this.relaxation;
 
 		final int baseX = (int) Math.floor(x);
 		final int baseY = (int) Math.floor(y);
@@ -23,14 +25,16 @@ public final class Voronoi {
 		double ry = 0;
 		double rdist = 1000;
 
-		for (int xo = -1; xo <= 1; ++xo) {
+		for (int xo = -2; xo <= 2; ++xo) {
 			int gridX = baseX + xo;
 
-			for (int yo = -1; yo <= 1; ++yo) {
+			for (int yo = -2; yo <= 2; ++yo) {
+				if (xo * xo == 4 && yo * yo == 4) continue; // shave off corners
+
 				int gridY = baseY + yo;
 
-				double vx = gridX + relaxation * 0.5f + unrelaxation * this.randomDouble(gridX, gridY, 0);
-				double vy = gridY + relaxation * 0.5f + unrelaxation * this.randomDouble(gridX, gridY, 1);
+				double vx = gridX + this.relaxation * 0.5 + unrelaxation * this.randomDouble(gridX, gridY, 0);
+				double vy = gridY + this.relaxation * 0.5 + unrelaxation * this.randomDouble(gridX, gridY, 1);
 				double vdist = squaredDist(x, y, vx, vy);
 
 				if (vdist < rdist) {
@@ -44,32 +48,41 @@ public final class Voronoi {
 		return new Point(rx, ry);
 	}
 
-	public double sampleD1D2Worley(double x, double y) {
+	public MultiD1D2Result sampleD1D2Worley(double x, double y) {
+		double unrelaxation = 1.0 - this.relaxation;
+
 		final int baseX = (int) Math.floor(x);
 		final int baseY = (int) Math.floor(y);
 		double rdist2 = 1000;
 		double rdist = 1000;
+		// closest point's grid X and Y
+		int closestGridX = 0;
+		int closestGridY = 0;
 
-		for (int xo = -1; xo <= 1; ++xo) {
+		for (int xo = -2; xo <= 2; ++xo) {
 			int gridX = baseX + xo;
 
-			for (int yo = -1; yo <= 1; ++yo) {
+			for (int yo = -2; yo <= 2; ++yo) {
+				if (xo * xo == 4 && yo * yo == 4) continue; // shave off corners
+
 				int gridY = baseY + yo;
 
-				double vx = gridX + this.randomDouble(gridX, gridY, 0);
-				double vy = gridY + this.randomDouble(gridX, gridY, 1);
+				double vx = gridX + this.relaxation * 0.5 + unrelaxation * this.randomDouble(gridX, gridY, 0);
+				double vy = gridY + this.relaxation * 0.5 + unrelaxation * this.randomDouble(gridX, gridY, 1);
 				double vdist = squaredDist(x, y, vx, vy);
 
 				if (vdist < rdist) {
 					rdist2 = rdist;
 					rdist = vdist;
+					closestGridX = gridX;
+					closestGridY = gridY;
 				} else if (vdist < rdist2) {
 					rdist2 = vdist;
 				}
 			}
 		}
 
-		return Math.sqrt(rdist2) - Math.sqrt(rdist);
+		return new MultiD1D2Result(Math.sqrt(rdist2) - Math.sqrt(rdist), closestGridX, closestGridY);
 	}
 
 	private int randomInt(int x, int y, long salt) {
@@ -98,4 +111,6 @@ public final class Voronoi {
 		double dy = y1 - y0;
 		return dx * dx + dy * dy;
 	}
+
+	public record MultiD1D2Result(double value, int closestGridX, int closestGridY) {}
 }

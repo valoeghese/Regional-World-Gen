@@ -34,17 +34,12 @@ public class LinearSpline {
 		for (Point next : this.entries) {
 			if (x < next.getX()) {
 				if (previous == null) return next.getY(); // at the very beginning, clamp to next point's y
-				else return map(x, previous.getX(), next.getX(), previous.getY(), next.getY()); // line
+				else return Maths.map(x, previous.getX(), next.getX(), previous.getY(), next.getY()); // line
 			}
 
 			previous = next;
 		}
 
 		return previous.getY(); // if passes through all points clamp to final point's y.
-	}
-
-	private static final double map(double value, double min, double max, double newmin, double newmax) {
-		double prog = (value - min) / (max - min);
-		return newmin + prog * (newmax - newmin);
 	}
 }
