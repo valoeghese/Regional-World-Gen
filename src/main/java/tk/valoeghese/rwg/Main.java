@@ -2,16 +2,24 @@ package tk.valoeghese.rwg;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Random;
 
 public class Main extends JPanel {
 	public static void main(String[] args) throws Exception {
+		// gui
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		JFrame frame = new JFrame("Regional World Gen");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		frame.add(new Main());
+		frame.add(new Main(new WorldGen(new Random().nextLong())));
 		frame.setSize(600, 600);
 		frame.setVisible(true);
 	}
+
+	Main(WorldGen worldGen) {
+		this.worldGen = worldGen;
+	}
+
+	private final WorldGen worldGen;
 
 	@Override
 	public void paint(Graphics g) {

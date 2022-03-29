@@ -1,12 +1,16 @@
 package tk.valoeghese.rwg;
 
-import java.util.OptionalInt;
-
 public class Point {
 	public Point(double x, double y) {
 		this.x = x;
 		this.y = y;
 		this.value = this.hashCode() * 29 + Double.hashCode(this.x);
+	}
+
+	private Point(double x, double y, int value) {
+		this.x = x;
+		this.y = y;
+		this.value = value;
 	}
 
 	private final double x;
@@ -74,5 +78,15 @@ public class Point {
 		return "(" + this.x
 				+ ", " + this.y
 				+ ')';
+	}
+
+	/**
+	 * Creates a point at the given position, and with no other associated information.
+	 * @param x the x position.
+	 * @param y the y position.
+	 * @return the created point object.
+	 */
+	public static Point onlyAt(double x, double y) {
+		return new Point(x, y, 0);
 	}
 }
